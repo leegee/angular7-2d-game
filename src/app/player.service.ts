@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class PlayerService {
-
   pos = {
     x: 0,
     y: 0
@@ -15,37 +14,60 @@ export class PlayerService {
     y: 0
   };
 
-  move = {
+  next = {
     x: 0,
     y: 0
-  }
+  };
 
   constructor() { }
 
-  startInput() {
-    window.addEventListener('keydown', this._listenKeyDown);
+  startInput(): void {
+    window.addEventListener('keydown', this._listenKeyDown.bind(this));
   }
 
-  stopInput() {
-    window.removeEventListener('keydown', this._listenKeyDown);
+  stopInput(): void {
+    window.removeEventListener('keydown', this._listenKeyDown.bind(this));
   }
 
-  _listenKeyDown(e) {
+  init(width: number, height: number): any {
+    // tslint:disable: no-bitwise
+    this.pos.x = ~~(width / 2);
+    this.pos.y = ~~(height / 2);
+    // tslint:enable: no-bitwise
+  }
+
+  _listenKeyDown(e): void {
     switch (e.code) {
       case 'ArrowUp':
-        this.move.y = -1;
+        this.next.y = -1;
         break;
       case 'ArrowDown':
-        this.move.y = 1;
+        this.next.y = 1;
         break;
       case 'ArrowLeft':
-        this.move.x = -1;
+        this.next.x = -1;
         break;
       case 'ArrowRight':
-        this.move.x = 1;
+        this.next.x = 1;
         break;
 
     }
   }
+
+  nextPosition(): { x: number, y: number } {
+    return {
+      x: this.pos.x + this.next.x,
+      y: this.pos.y + this.next.y
+    };
+  }
+
+  die(): any {
+    throw new Error("die not implemented.");
+  }
+
+  move(): void {
+    this.pos.x += this.pos.x;
+    this.pos.y += this.pos.y;
+}
 
 }

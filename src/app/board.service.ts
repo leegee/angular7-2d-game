@@ -9,7 +9,10 @@ export class BoardService {
   width!: number;
   height!: number;
 
-  constructor(
+  constructor() {
+  }
+
+  init(
     width = 10,
     height = 10
   ) {
@@ -18,6 +21,5 @@ export class BoardService {
     this.cells = Array(width).fill(
       Array(height).fill(0)
     );
-
   }
 }
