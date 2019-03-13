@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { PlayerService } from './player.service';
 import { BoardService } from './board.service';
 
+const MAX_MS_BETWEEN_MOVES = 1000;
+
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  canvas!: HTMLCanvasElement;
   player: PlayerService;
   board: BoardService;
 
@@ -17,30 +18,40 @@ export class GameService {
     this.player = player;
     this.board = board;
 
-    this.player.init( this.board.width, this.board.height);
+    this.player.init(this.board.cellsWidth, this.board.cellsHeight);
   }
 
   start(
     canvas: HTMLCanvasElement,
   ) {
-    this.board.init(10, 10);
-    this.canvas = canvas;
+    this.board.init(canvas, 10, 10);
     this.player.startInput();
     window.requestAnimationFrame(this.step.bind(this));
   }
 
-  step(timestamp: number = null) {
+  step() {
     this.collisionDetection();
-    // update directions
-    // window.requestAnimationFrame(this.step);
+    this.player.move();
+    this.render();
+
+    window.requestAnimationFrame(
+      this.step.bind(this)
+    );
   }
 
   collisionDetection() {
-    const next = this.player.nextPosition();
-    if (next.x > this.board.width || next.x < 0 || next.y > this.board.height) {
+    const playerNextPos = this.player.nextPosition();
+    console.log('playerNextPos', playerNextPos);
+    if (playerNextPos.x > this.board.cellsWidth || playerNextPos.x < 0 ||
+      playerNextPos.y > this.board.cellsHeight || playerNextPos.y < 0
+    ) {
       this.player.die();
     }
+  }
 
-    this.player.move();
+  render() {
+    this.board.render(
+      this.player
+    );
   }
 }

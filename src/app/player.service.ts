@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class PlayerService {
-  pos = {
+  position = {
     x: 0,
     y: 0
   };
@@ -31,43 +31,45 @@ export class PlayerService {
 
   init(width: number, height: number): any {
     // tslint:disable: no-bitwise
-    this.pos.x = ~~(width / 2);
-    this.pos.y = ~~(height / 2);
+    this.position.x = ~~(width / 2);
+    this.position.y = ~~(height / 2);
     // tslint:enable: no-bitwise
   }
 
   _listenKeyDown(e): void {
     switch (e.code) {
       case 'ArrowUp':
-        this.next.y = -1;
+        this.dir.y = -1;
         break;
       case 'ArrowDown':
-        this.next.y = 1;
+        this.dir.y = 1;
         break;
       case 'ArrowLeft':
-        this.next.x = -1;
+        this.dir.x = -1;
         break;
       case 'ArrowRight':
-        this.next.x = 1;
+        this.dir.x = 1;
         break;
 
     }
   }
 
   nextPosition(): { x: number, y: number } {
-    return {
-      x: this.pos.x + this.next.x,
-      y: this.pos.y + this.next.y
+    this.next = {
+      x: this.position.x + this.dir.x,
+      y: this.position.y + this.dir.y
     };
+    this.dir = { x: 0, y: 0 }; // XXX
+    return this.next;
   }
 
   die(): any {
+    console.log(this.position, this.next, this.dir);
     throw new Error("die not implemented.");
   }
 
   move(): void {
-    this.pos.x += this.pos.x;
-    this.pos.y += this.pos.y;
-}
+    this.position = this.next;
+  }
 
 }

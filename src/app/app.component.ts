@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { GameService } from './game.service';
 
 @Component({
@@ -6,11 +6,20 @@ import { GameService } from './game.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
+  game: GameService;
 
-  constructor(
-    game: GameService
-  ) {
-    game.start(document.getElementById('game') as HTMLCanvasElement);
+  constructor(game: GameService) {
+    this.game = game;
   }
+
+  ngAfterViewInit(): void {
+    this.game.start(
+      document.getElementById('game-board') as HTMLCanvasElement
+    );
+  }
+
 }
+
+
+
