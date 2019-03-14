@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
 import { PlayerService } from './player.service';
 
+const CELLS_DIM_WIDTH = 32;
+const CELLS_DIM_HEIGHT = 32;
+
 @Injectable({
   providedIn: 'root'
 })
 export class BoardService {
   cells!: number[][];
-  cellsWidth!: number;
-  cellsHeight!: number;
+  cellsDimWidth!: number;
+  cellsDimHeight!: number;
   onScreen: {
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -22,37 +25,45 @@ export class BoardService {
       canvas: null,
       ctx: null
     };
+  cellOnScreenWidth: number;
+  cellOnScreenHeight: number;
+  cellOnScreenWidthHalf: number;
+  cellOnScreenHeightHalf: number;
 
   init(
-    canvas: HTMLCanvasElement,
-    width = 10,
-    height = 10
+    canvas: HTMLCanvasElement
   ) {
-    this.cellsWidth = width;
-    this.cellsHeight = height;
+    this.cellsDimWidth = CELLS_DIM_WIDTH;
+    this.cellsDimHeight = CELLS_DIM_HEIGHT;
+
+    this.cells = Array(this.cellsDimWidth).fill(
+      Array(this.cellsDimHeight).fill(0)
+    );
+
+    this.cellOnScreenWidth = Math.floor(window.innerWidth / this.cellsDimWidth);
+    this.cellOnScreenHeight = Math.floor(window.innerHeight / this.cellsDimHeight);
+    this.cellOnScreenWidthHalf = this.cellOnScreenWidth / 2;
+    this.cellOnScreenHeightHalf = this.cellOnScreenHeight / 2;
+
     this.onScreen.canvas = canvas;
-    this.onScreen.canvas.width = this.cellsWidth;
-    this.onScreen.canvas.height = this.cellsHeight;
+    this.onScreen.canvas.width = window.innerWidth;
+    this.onScreen.canvas.height = window.innerHeight;
     this.onScreen.ctx = canvas.getContext('2d', { alpha: false });
 
     // Use OffscreenCanvas when available
     this.offScreen.canvas = document.createElement('canvas');
-    this.offScreen.canvas.width = this.cellsWidth;
-    this.offScreen.canvas.height = this.cellsHeight;
+    this.offScreen.canvas.width = this.onScreen.canvas.width;
+    this.offScreen.canvas.height = this.onScreen.canvas.height;
     this.offScreen.ctx = this.offScreen.canvas.getContext('2d', { alpha: false });
 
-    this.cells = Array(width).fill(
-      Array(height).fill(0)
-    );
-
-    this.scaleOnscreenCanvas();
+    // this.scaleOnscreenCanvas();
   }
 
   scaleOnscreenCanvas(): void {
-    const scaleX = window.innerWidth / this.cellsWidth;
-    const scaleY = window.innerHeight / this.cellsHeight;
+    const scaleX = window.innerWidth / this.cellsDimWidth;
+    const scaleY = window.innerHeight / this.cellsDimHeight;
 
-    const scaleToFit = Math.max(scaleX, scaleY);
+    const scaleToFit = Math.min(scaleX, scaleY);
 
     this.onScreen.canvas.style.transformOrigin = '0 0';
     this.onScreen.canvas.style.transform = 'scale(' + scaleToFit + ')';
@@ -64,14 +75,13 @@ export class BoardService {
       0, 0, this.offScreen.canvas.width, this.offScreen.canvas.height
     );
 
-    this.offScreen.ctx.fillStyle = 'red';
+    this.offScreen.ctx.fillStyle = 'white';
     this.offScreen.ctx.fillRect(
-      player.position.x,
-      player.position.y,
-      1, 1
+      Math.floor(player.position.x - this.cellOnScreenWidthHalf),
+      Math.floor(player.position.y - this.cellOnScreenHeightHalf),
+      this.cellOnScreenWidth,
+      this.cellOnScreenHeight
     );
-
-    console.log(player.position);
 
     this.onScreen.ctx.drawImage(this.offScreen.canvas, 0, 0);
   }

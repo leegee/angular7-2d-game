@@ -2,14 +2,13 @@ import { Injectable } from '@angular/core';
 import { PlayerService } from './player.service';
 import { BoardService } from './board.service';
 
-const MAX_MS_BETWEEN_MOVES = 1000;
-
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
   player: PlayerService;
   board: BoardService;
+  animationFrameId!: number;
 
   constructor(
     player: PlayerService,
@@ -17,35 +16,35 @@ export class GameService {
   ) {
     this.player = player;
     this.board = board;
-
-    this.player.init(this.board.cellsWidth, this.board.cellsHeight);
   }
 
   start(
-    canvas: HTMLCanvasElement,
+    canvas: HTMLCanvasElement
   ) {
-    this.board.init(canvas, 10, 10);
-    this.player.startInput();
+    this.board.init(canvas);
+    this.player.init(this.board.cellsDimWidth, this.board.cellsDimHeight);
     window.requestAnimationFrame(this.step.bind(this));
   }
 
   step() {
     this.collisionDetection();
-    this.player.move();
+    this.player.tick();
     this.render();
 
-    window.requestAnimationFrame(
+    this.animationFrameId = window.requestAnimationFrame(
       this.step.bind(this)
     );
   }
 
   collisionDetection() {
     const playerNextPos = this.player.nextPosition();
-    console.log('playerNextPos', playerNextPos);
-    if (playerNextPos.x > this.board.cellsWidth || playerNextPos.x < 0 ||
-      playerNextPos.y > this.board.cellsHeight || playerNextPos.y < 0
+    const playerGridX = Math.floor(playerNextPos.x / this.board.cellOnScreenWidth);
+    const playerGridY = Math.floor(playerNextPos.y / this.board.cellOnScreenHeight);
+
+    if (playerGridX < 0 || playerGridY < 0 ||
+      playerGridX > this.board.cellsDimWidth || playerGridY > this.board.cellsDimHeight
     ) {
-      this.player.die();
+      this.die();
     }
   }
 
@@ -53,5 +52,13 @@ export class GameService {
     this.board.render(
       this.player
     );
+  }
+
+  die() {
+    console.log('dead', this.player);
+    this.player.die();
+    window.cancelAnimationFrame(this.animationFrameId);
+    // alert('d e d');
+    // document.location.reload();
   }
 }
